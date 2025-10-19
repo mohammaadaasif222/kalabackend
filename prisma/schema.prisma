@@ -1,0 +1,29 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  password_hash     String
+  phone             String?   @unique
+  user_type         String
+  google_id         String?
+  is_premium        Boolean   @default(false)
+  premium_expires_at DateTime?
+  is_active         Boolean   @default(true)
+  email_verified    Boolean   @default(false)
+  phone_verified    Boolean   @default(false)
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+  last_login        DateTime?
+
+  @@map("users")
+}
