@@ -25,5 +25,357 @@ model User {
   updated_at        DateTime  @updatedAt
   last_login        DateTime?
 
+  profile              UserProfile?
+  talentProfile        TalentProfile?
+  subscriptions        UserSubscription[]
+  transactions         Transaction[]
+  sentMessages         Message[]        @relation("SentMessages")
+  receivedMessages     Message[]        @relation("ReceivedMessages")
+  activityLogs         ActivityLog[]
+  reviewsGiven         Review[]         @relation("Reviewer")
+  reviewsReceived      Review[]         @relation("Reviewee")
+  
   @@map("users")
+}
+
+
+model UserProfile {
+  id                 String      @id @default(uuid())
+  user_id            String      @unique
+  first_name         String
+  last_name          String
+  display_name       String?
+  bio                String?
+  profile_image_url  String?
+  banner_image_url   String?
+  location_city      String?
+  location_state     String?
+  location_country   String?     @default("India")
+  website_url        String?
+  languages          Json?
+  time_zone          String?     @default("Asia/Kolkata")
+  created_at         DateTime    @default(now())
+  updated_at         DateTime    @updatedAt
+
+  user               User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([location_city, location_state])
+  @@index([display_name])
+}
+
+model TalentProfile {
+  id                        String      @id @default(uuid())
+  user_id                   String      @unique
+  talent_type               TalentType
+  categories                Json
+  specializations           Json?
+  experience_level          ExperienceLevel
+  years_of_experience       Int?        @default(0)
+  rate_per_hour             Decimal?    @db.Decimal(10,2)
+  rate_per_project          Decimal?    @db.Decimal(10,2)
+  rate_per_post             Decimal?    @db.Decimal(10,2)
+  currency                  String?     @default("INR")
+  availability_status       AvailabilityStatus? @default(available)
+  portfolio_description     String?
+  achievements              String?
+  awards                    Json?
+  certifications            Json?
+  equipment_owned           Json?
+  collaboration_preferences Json?
+  created_at                DateTime    @default(now())
+  updated_at                DateTime    @updatedAt
+
+  user                      User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  socialAccounts            TalentSocialAccount[]
+
+  @@index([user_id])
+  @@index([talent_type])
+  @@index([availability_status])
+  @@index([experience_level])
+}
+
+model TalentSocialAccount {
+  id                  String     @id @default(uuid())
+  talent_profile_id   String
+  platform            Platform
+  handle              String
+  profile_url         String
+  followers_count     Int?       @default(0)
+  engagement_rate     Decimal?   @db.Decimal(5,2)
+  is_verified         Boolean?   @default(false)
+  is_primary          Boolean?   @default(false)
+  last_updated        DateTime   @updatedAt
+
+  talentProfile       TalentProfile @relation(fields: [talent_profile_id], references: [id], onDelete: Cascade)
+
+  @@index([talent_profile_id])
+  @@index([platform])
+  @@index([followers_count])
+  @@unique([talent_profile_id, platform, handle])
+}
+
+enum TalentType {
+  artist
+  influencer
+  both
+}
+
+enum ExperienceLevel {
+  beginner
+  intermediate
+  professional
+  expert
+}
+
+enum AvailabilityStatus {
+  available
+  busy
+  booked
+  inactive
+}
+
+enum Platform {
+  instagram
+  youtube
+  tiktok
+  facebook
+  twitter
+  linkedin
+  spotify
+  other
+}
+
+
+// ==========================================
+// SUBSCRIPTION PLANS
+// ==========================================
+model SubscriptionPlan {
+  id                       String        @id @default(uuid())
+  plan_name                String
+  plan_type                PlanType
+  price                    Decimal       @db.Decimal(10, 2)
+  currency                 String?       @default("INR")
+  billing_cycle            BillingCycle
+  features                 Json
+  max_projects_per_month   Int?
+  max_applications_per_month Int?
+  is_active                Boolean?      @default(true)
+  created_at               DateTime      @default(now())
+
+  userSubscriptions        UserSubscription[]
+
+  @@index([plan_type])
+  @@index([is_active])
+  @@unique([plan_name, plan_type, billing_cycle])
+}
+
+enum PlanType {
+  talent
+  business
+  venue
+}
+
+enum BillingCycle {
+  monthly
+  quarterly
+  yearly
+}
+
+
+model UserSubscription {
+  id                    String              @id @default(uuid())
+  user_id               String
+  plan_id               String
+  start_date            DateTime
+  end_date              DateTime
+  subscription_status   SubscriptionStatus? @default(active)
+  auto_renewal          Boolean?            @default(true)
+  payment_method        String?
+  amount_paid           Decimal             @db.Decimal(10, 2)
+  currency              String?             @default("INR")
+  created_at            DateTime            @default(now())
+
+  user                  User                @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  plan                  SubscriptionPlan    @relation(fields: [plan_id], references: [id])
+  transactions          Transaction[]
+
+  @@index([user_id])
+  @@index([plan_id])
+  @@index([subscription_status])
+  @@index([start_date, end_date])
+}
+
+enum SubscriptionStatus {
+  active
+  cancelled
+  expired
+  suspended
+}
+
+
+model Transaction {
+  id                      String            @id @default(uuid())
+  user_id                 String
+  subscription_id         String?
+  collaboration_id        String?
+  transaction_type        TransactionType
+  amount                  Decimal           @db.Decimal(10, 2)
+  currency                String?           @default("INR")
+  payment_gateway         String?
+  gateway_transaction_id  String?
+  transaction_status      TransactionStatus? @default(pending)
+  payment_method          String?
+  transaction_date        DateTime          @default(now())
+  description             String?
+
+  user                    User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  subscription            UserSubscription? @relation(fields: [subscription_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([transaction_type])
+  @@index([transaction_status])
+  @@index([transaction_date])
+  @@index([gateway_transaction_id])
+}
+
+enum TransactionType {
+  subscription
+  commission
+  payout
+  refund
+}
+
+enum TransactionStatus {
+  pending
+  completed
+  failed
+  refunded
+}
+
+
+model Message {
+  id              String      @id @default(uuid())
+  sender_id       String
+  receiver_id     String
+  project_id      String?
+  subject         String?
+  message_body    String
+  message_type    MessageType @default(direct)
+  is_read         Boolean?    @default(false)
+  read_at         DateTime?
+  sent_at         DateTime    @default(now())
+
+  sender          User        @relation("SentMessages", fields: [sender_id], references: [id], onDelete: Cascade)
+  receiver        User        @relation("ReceivedMessages", fields: [receiver_id], references: [id], onDelete: Cascade)
+
+  @@index([sender_id])
+  @@index([receiver_id])
+  @@index([project_id])
+  @@index([sent_at])
+  @@index([is_read, receiver_id])
+}
+
+enum MessageType {
+  direct
+  project_inquiry
+  collaboration
+  system
+}
+
+model ActivityLog {
+  id                   String             @id @default(uuid())
+  user_id              String
+  activity_type        ActivityType
+  activity_description String
+  related_entity_type  RelatedEntityType?
+  related_entity_id    String?
+  metadata             Json?
+  created_at           DateTime           @default(now())
+
+  user                 User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([activity_type])
+  @@index([created_at])
+  @@index([related_entity_type, related_entity_id])
+}
+
+enum ActivityType {
+  profile_update
+  project_posted
+  application_sent
+  collaboration_started
+  payment_received
+  review_received
+  login
+  other
+}
+
+enum RelatedEntityType {
+  project
+  collaboration
+  user
+  venue
+  event
+  other
+}
+
+model Review {
+  id                String        @id @default(uuid())
+  reviewer_id       String
+  reviewee_id       String
+  collaboration_id  String?
+  rating            Int
+  review_title      String?
+  review_text       String?
+  review_type       ReviewType
+  is_public         Boolean?      @default(true)
+  is_featured       Boolean?      @default(false)
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+
+  reviewer          User          @relation("Reviewer", fields: [reviewer_id], references: [id], onDelete: Cascade)
+  reviewee          User          @relation("Reviewee", fields: [reviewee_id], references: [id], onDelete: Cascade)
+
+  @@index([reviewer_id])
+  @@index([reviewee_id])
+  @@index([collaboration_id])
+  @@index([rating])
+  @@index([is_public])
+  @@unique([collaboration_id, reviewer_id])
+}
+
+enum ReviewType {
+  talent_to_client
+  client_to_talent
+  venue_review
+}
+
+
+model Category {
+  id                  String      @id @default(uuid())
+  category_name       String
+  category_type       CategoryType
+  parent_category_id  String?
+  description         String?
+  icon_url            String?
+  is_active           Boolean?    @default(true)
+  display_order       Int?        @default(0)
+  created_at          DateTime    @default(now())
+
+  parent_category     Category?   @relation("ParentCategory", fields: [parent_category_id], references: [id], onDelete: SetNull)
+  subcategories       Category[]  @relation("ParentCategory")
+
+  @@index([category_type])
+  @@index([parent_category_id])
+  @@index([is_active])
+  @@unique([category_name, category_type])
+}
+
+enum CategoryType {
+  talent
+  project
+  venue
+  event
 }
