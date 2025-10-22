@@ -1,28 +1,24 @@
-import {
-  Controller,
-  Get,
+import { Controller,  Get,
   Post,
   Patch,
   Delete,
-  Body,
   Param,
+  Body,
   Query,
   HttpCode,
-  HttpStatus
-} from '@nestjs/common';
-import type { CreateProfileDto, ProfileService, UpdateProfileDto } from './profile.service';
+  HttpStatus, } from '@nestjs/common';
+import { ProfileService } from './profile.service';
+import type { CreateProfileDto, UpdateProfileDto } from './dto/profile.dto';
 
-
-@Controller('profiles')
+@Controller('profile')
 export class ProfileController {
-  constructor(private readonly profileService: ProfileService) {}
-
-  @Post()
+    constructor(private readonly profileService:ProfileService ) {}
+      @Post('/')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createProfileDto: CreateProfileDto) {
     return this.profileService.create(createProfileDto);
   }
-
+  
   @Get('search')
   async search(
     @Query('city') city?: string,
@@ -56,4 +52,5 @@ export class ProfileController {
   async remove(@Param('id') id: string) {
     await this.profileService.remove(id);
   }
+
 }

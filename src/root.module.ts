@@ -7,11 +7,12 @@ import { SocialsModule } from './socials/socials.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ReviewModule } from './review/review.module';
 import { TransactionModule } from './transaction/transaction.module';
+import { ProfileModule } from './profile/profile.module';
 
 
 
 @Module({
-  imports: [AuthModule, UserModule, PrismaModule, TalentModule, SocialsModule, CategoriesModule, ReviewModule, TransactionModule],
+  imports: [AuthModule, UserModule, PrismaModule, TalentModule, SocialsModule, CategoriesModule, ReviewModule, TransactionModule, ProfileModule],
   controllers: [],
   providers: [],
 })
