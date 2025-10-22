@@ -1,4 +1,5 @@
-import { Controller,  Get,
+import {
+  Controller, Get,
   Post,
   Patch,
   Delete,
@@ -6,19 +7,25 @@ import { Controller,  Get,
   Body,
   Query,
   HttpCode,
-  HttpStatus, } from '@nestjs/common';
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import type { CreateProfileDto, UpdateProfileDto } from './dto/profile.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+
 
 @Controller('profile')
+@UseGuards(JwtAuthGuard)
 export class ProfileController {
-    constructor(private readonly profileService:ProfileService ) {}
-      @Post('/')
+  constructor(private readonly profileService: ProfileService) { }
+
+  @Post('/')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createProfileDto: CreateProfileDto) {
     return this.profileService.create(createProfileDto);
   }
-  
+
   @Get('search')
   async search(
     @Query('city') city?: string,
@@ -32,6 +39,10 @@ export class ProfileController {
       country,
       display_name: displayName
     });
+  }
+  @Get('me')
+  async findMe(@Param('id') id: string) {
+    return this.profileService.findByUserId(id);
   }
 
   @Get(':id')

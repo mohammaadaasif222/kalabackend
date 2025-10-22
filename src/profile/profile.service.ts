@@ -1,55 +1,51 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
-import { CreateProfileDto, UpdateProfileDto } from './dto/profile.dto';
-
+import { PrismaService } from '../prisma/prisma.service'; // Adjust path as needed
+import type { CreateProfileDto, UpdateProfileDto } from './dto/profile.dto';
 
 @Injectable()
 export class ProfileService {
-      constructor(private prisma: PrismaService) {}
-      
-  async create(data: CreateProfileDto) {
-    return await this.prisma.userProfile.create({
-      data: {
-        ...data,
-        location_country: data.location_country || 'India',
-        time_zone: data.time_zone || 'Asia/Kolkata'
-      }
-    });
-  }
+  constructor(private readonly prisma: PrismaService) {}
 
-  async findByUserId(userId: string) {
-    const profile = await this.prisma.userProfile.findUnique({
-      where: { user_id: userId },
+  async create(createProfileDto: CreateProfileDto) {
+    return this.prisma.userProfile.create({
+      data: createProfileDto,
       include: {
         user: {
           select: {
             id: true,
             email: true,
-            user_type: true
-          }
-        }
-      }
+            user_type: true,
+          },
+        },
+      },
+    });
+  }
+
+  async findByUserId(userId: string) {
+    if (!userId) {
+      throw new NotFoundException('User ID is required');
+    }
+
+    const profile = await this.prisma.userProfile.findUnique({
+      where: {
+        user_id: userId, // Make sure this matches your Prisma schema field name
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            user_type: true,
+          },
+        },
+      },
     });
 
     if (!profile) {
-      throw new NotFoundException('Profile not found');
+      throw new NotFoundException(`Profile not found for user ID: ${userId}`);
     }
 
     return profile;
-  }
-
-  async update(userId: string, data: UpdateProfileDto) {
-    return await this.prisma.userProfile.update({
-      where: { user_id: userId },
-      data
-    });
-  }
-
-  async remove(userId: string) {
-    return await this.prisma.userProfile.delete({
-      where: { user_id: userId }
-    });
   }
 
   async search(filters: {
@@ -60,33 +56,62 @@ export class ProfileService {
   }) {
     const where: any = {};
 
-    if (filters.city) {
-      where.location_city = { contains: filters.city, mode: 'insensitive' };
-    }
-    if (filters.state) {
-      where.location_state = { contains: filters.state, mode: 'insensitive' };
-    }
-    if (filters.country) {
-      where.location_country = { contains: filters.country, mode: 'insensitive' };
-    }
-    if (filters.display_name) {
-      where.display_name = { contains: filters.display_name, mode: 'insensitive' };
+    if (filters.city) where.location_city = { contains: filters.city, mode: 'insensitive' };
+    if (filters.state) where.location_state = { contains: filters.state, mode: 'insensitive' };
+    if (filters.country) where.location_country = { contains: filters.country, mode: 'insensitive' };
+    if (filters.display_name) where.display_name = { contains: filters.display_name, mode: 'insensitive' };
+
+    return this.prisma.userProfile.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            user_type: true,
+          },
+        },
+      },
+    });
+  }
+
+  async update(userId: string, updateProfileDto: UpdateProfileDto) {
+    if (!userId) {
+      throw new NotFoundException('User ID is required');
     }
 
-    return await this.prisma.userProfile.findMany({
-      where,
-      select: {
-        id: true,
-        user_id: true,
-        first_name: true,
-        last_name: true,
-        display_name: true,
-        bio: true,
-        profile_image_url: true,
-        location_city: true,
-        location_state: true,
-        location_country: true
-      }
+    // Check if profile exists
+    await this.findByUserId(userId);
+
+    return this.prisma.userProfile.update({
+      where: {
+        user_id: userId,
+      },
+      data: updateProfileDto,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            user_type: true,
+          },
+        },
+      },
+    });
+  }
+
+  async remove(userId: string) {
+    if (!userId) {
+      throw new NotFoundException('User ID is required');
+    }
+
+    // Check if profile exists
+    await this.findByUserId(userId);
+
+    return this.prisma.userProfile.delete({
+      where: {
+        user_id: userId,
+      },
     });
   }
 }
