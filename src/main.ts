@@ -4,7 +4,7 @@ import { RootModule } from './root.module';
 async function bootstrap() {
   const app = await NestFactory.create(RootModule);
    app.enableCors({
-    origin: ['http://localhost:3000', 'https://kalasquare.vercel.app/'],
+    origin: ['*'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
