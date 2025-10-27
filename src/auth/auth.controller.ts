@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Req, Put } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt.guard';
 import { GoogleLoginDto, LoginDto, RegisterDto } from './dto/auth.dto';
@@ -15,6 +15,10 @@ export class AuthController {
   @Post('login')
   async login(@Body() body: LoginDto) {
     return this.authService.login(body.email, body.password);
+  }
+  @Post('password-update')
+  async updatePassword(@Body() body: {id:string, password:string}) {
+    return this.authService.updatePassword(body.id, body.password);
   }
   @Post('google')
   async googleLogin(@Body() body: GoogleLoginDto) {

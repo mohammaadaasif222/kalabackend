@@ -7,13 +7,14 @@ import { CreateTalentDto, TalentFilterDto, UpdateTalentDto } from './dto/talent.
 
 @Injectable()
 export class TalentService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(data: CreateTalentDto) {
     return await this.prisma.talentProfile.create({
       data: {
         ...data,
         currency: data.currency || 'INR',
+        verify_badge: false,
         availability_status: data.availability_status || 'available'
       },
       include: {
@@ -61,7 +62,7 @@ export class TalentService {
     if (filters?.availability_status) {
       where.availability_status = filters.availability_status;
     }
-    
+
     if (filters?.min_rate || filters?.max_rate) {
       where.OR = [
         {

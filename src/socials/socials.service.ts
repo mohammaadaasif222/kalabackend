@@ -10,7 +10,6 @@ export class SocialsService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: CreateSocialAccountDto) {
-    // If setting as primary, unset other primary accounts for this talent
     if (data.is_primary) {
       await this.prisma.talentSocialAccount.updateMany({
         where: {

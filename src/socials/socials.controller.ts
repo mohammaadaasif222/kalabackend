@@ -15,23 +15,22 @@ import {
 } from './socials.service';
 import type { CreateSocialAccountDto, UpdateSocialAccountDto } from './dto/scoial.dto';
 
-@Controller('talents/:userId/social-accounts')
+@Controller('socials')
 export class SocialsController {
-  constructor(private readonly talentSocialService: SocialsService) {}
+  constructor(private readonly talentSocialService: SocialsService) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(
-    @Param('userId') userId: string,
     @Body() createSocialAccountDto: CreateSocialAccountDto
   ) {
+    console.log(createSocialAccountDto)
     return this.talentSocialService.create(createSocialAccountDto);
   }
 
-  @Get()
+  @Get('talent/:userId')
   async findAll(@Param('userId') userId: string) {
-    // Note: You'll need to fetch talent_profile_id from userId first
-    // This is simplified - in real implementation, fetch the talent profile
+  
     return this.talentSocialService.findByTalentId(userId);
   }
 

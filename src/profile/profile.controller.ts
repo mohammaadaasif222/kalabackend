@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Request
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import type { CreateProfileDto, UpdateProfileDto } from './dto/profile.dto';
@@ -41,8 +42,9 @@ export class ProfileController {
     });
   }
   @Get('me')
-  async findMe(@Param('id') id: string) {
-    return this.profileService.findByUserId(id);
+  async findMe(@Request() req) {
+    const userId = req.user.sub;
+    return this.profileService.findByUserId(userId);
   }
 
   @Get(':id')
@@ -50,7 +52,7 @@ export class ProfileController {
     return this.profileService.findByUserId(id);
   }
 
-  @Patch(':id')
+  @Post(':id')
   async update(
     @Param('id') id: string,
     @Body() updateProfileDto: UpdateProfileDto

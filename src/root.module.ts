@@ -8,11 +8,12 @@ import { CategoriesModule } from './categories/categories.module';
 import { ReviewModule } from './review/review.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { ProfileModule } from './profile/profile.module';
+import { WorksModule } from './works/works.module';
 
 
 
 @Module({
-  imports: [AuthModule, UserModule, PrismaModule, TalentModule, SocialsModule, CategoriesModule, ReviewModule, TransactionModule, ProfileModule],
+  imports: [AuthModule, UserModule, PrismaModule, TalentModule, SocialsModule, CategoriesModule, ReviewModule, TransactionModule, ProfileModule, WorksModule],
   controllers: [],
   providers: [],
 })

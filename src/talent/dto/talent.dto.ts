@@ -16,8 +16,8 @@ export interface CreateTalentDto {
   achievements?: string;
   awards?: any;
   certifications?: any;
-  equipment_owned?: any;
   collaboration_preferences?: any;
+  verify_badge:boolean
 }
 
 export interface UpdateTalentDto {
@@ -35,7 +35,7 @@ export interface UpdateTalentDto {
   achievements?: string;
   awards?: any;
   certifications?: any;
-  equipment_owned?: any;
+  verify_badge:boolean
   collaboration_preferences?: any;
 }
 

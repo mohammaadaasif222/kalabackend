@@ -6,10 +6,13 @@ import { AuthController } from './auth.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { JwtStrategy } from './jwt.strategy';
 import { UserModule } from 'src/user/user.module';
+import { ProfileModule } from 'src/profile/profile.module';
+import { TalentModule } from 'src/talent/talent.module';
 
 @Module({
   imports: [
-    
+    TalentModule,
+    ProfileModule,
     PrismaModule,
     PassportModule,
     UserModule,
@@ -21,4 +24,4 @@ import { UserModule } from 'src/user/user.module';
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
 })
-export class AuthModule {}
+export class AuthModule { }

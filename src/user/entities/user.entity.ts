@@ -20,6 +20,7 @@ export class UserEntity {
   created_at: Date;
   updated_at: Date;
   last_login?: Date;
+  createdBy?:string;
 
   constructor(partial: Partial<UserEntity>) {
     Object.assign(this, partial);

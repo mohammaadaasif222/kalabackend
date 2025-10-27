@@ -4,6 +4,10 @@ export interface CreateProfileDto {
   last_name: string;
   display_name?: string;
   bio?: string;
+  cintaId?: string
+  whatsapp?: string
+  gender:string
+  highest_education:string
   profile_image_url?: string;
   banner_image_url?: string;
   location_city?: string;
@@ -19,6 +23,8 @@ export interface UpdateProfileDto {
   last_name?: string;
   display_name?: string;
   bio?: string;
+  cintaId?: string
+  whatsapp?: string
   profile_image_url?: string;
   banner_image_url?: string;
   location_city?: string;

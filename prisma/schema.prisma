@@ -14,7 +14,7 @@ model User {
   email             String    @unique
   password_hash     String
   phone             String?   @unique
-  user_type         String
+  user_type         String?
   google_id         String?
   is_premium        Boolean   @default(false)
   premium_expires_at DateTime?
@@ -24,7 +24,7 @@ model User {
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
   last_login        DateTime?
-
+  createdBy          String?   @default("user")
   profile              UserProfile?
   talentProfile        TalentProfile?
   subscriptions        UserSubscription[]
@@ -38,14 +38,17 @@ model User {
   @@map("users")
 }
 
-
 model UserProfile {
   id                 String      @id @default(uuid())
   user_id            String      @unique
-  first_name         String
-  last_name          String
+  first_name         String?
+  last_name          String?
   display_name       String?
   bio                String?
+  dob                String?
+  gender             String?
+  whatsapp           String?
+  highest_education  String?
   profile_image_url  String?
   banner_image_url   String?
   location_city      String?
@@ -53,6 +56,7 @@ model UserProfile {
   location_country   String?     @default("India")
   website_url        String?
   languages          Json?
+  cintaId            String?
   time_zone          String?     @default("Asia/Kolkata")
   created_at         DateTime    @default(now())
   updated_at         DateTime    @updatedAt
@@ -67,13 +71,13 @@ model UserProfile {
 model TalentProfile {
   id                        String      @id @default(uuid())
   user_id                   String      @unique
-  talent_type               TalentType
-  categories                Json
+  talent_type               TalentType?
+  categories                Json?
   specializations           Json?
-  experience_level          ExperienceLevel
+  experience_level          ExperienceLevel?
   years_of_experience       Int?        @default(0)
-  rate_per_hour             Decimal?    @db.Decimal(10,2)
-  rate_per_project          Decimal?    @db.Decimal(10,2)
+  rate_per_live             Decimal?    @db.Decimal(10,2)
+  rate_per_video            Decimal?    @db.Decimal(10,2)
   rate_per_post             Decimal?    @db.Decimal(10,2)
   currency                  String?     @default("INR")
   availability_status       AvailabilityStatus? @default(available)
@@ -81,13 +85,14 @@ model TalentProfile {
   achievements              String?
   awards                    Json?
   certifications            Json?
-  equipment_owned           Json?
   collaboration_preferences Json?
+  verify_badge              Boolean     @default(false)
   created_at                DateTime    @default(now())
   updated_at                DateTime    @updatedAt
 
   user                      User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
   socialAccounts            TalentSocialAccount[]
+  workSamples               WorkSample[]
 
   @@index([user_id])
   @@index([talent_type])
@@ -98,9 +103,9 @@ model TalentProfile {
 model TalentSocialAccount {
   id                  String     @id @default(uuid())
   talent_profile_id   String
-  platform            Platform
-  handle              String
-  profile_url         String
+  platform            Platform?
+  handle              String?
+  profile_url         String?
   followers_count     Int?       @default(0)
   engagement_rate     Decimal?   @db.Decimal(5,2)
   is_verified         Boolean?   @default(false)
@@ -119,6 +124,7 @@ enum TalentType {
   artist
   influencer
   both
+  actor
 }
 
 enum ExperienceLevel {
@@ -301,6 +307,9 @@ model ActivityLog {
   @@index([related_entity_type, related_entity_id])
 }
 
+
+
+
 enum ActivityType {
   profile_update
   project_posted
@@ -353,6 +362,7 @@ enum ReviewType {
 }
 
 
+
 model Category {
   id                  String      @id @default(uuid())
   category_name       String
@@ -378,4 +388,36 @@ enum CategoryType {
   project
   venue
   event
+}
+// Add these enums BEFORE the WorkSample model in your schema.prisma
+
+enum WorkSampleType {
+  video
+  image
+  reel
+  other
+}
+
+enum WorkStatus {
+  pending
+  approved
+  rejected
+}
+
+model WorkSample {
+  id              String         @id @default(uuid())
+  talentProfileId String         
+  title           String         @db.VarChar(255)
+  type            WorkSampleType
+  url             String         @db.VarChar(500)
+  status          WorkStatus     @default(pending)
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  talentProfile  TalentProfile @relation(fields: [talentProfileId], references: [id], onDelete: Cascade)
+
+  @@index([talentProfileId])
+  @@index([type])
+  @@index([status])
+  @@map("work_samples")
 }

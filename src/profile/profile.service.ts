@@ -4,7 +4,7 @@ import type { CreateProfileDto, UpdateProfileDto } from './dto/profile.dto';
 
 @Injectable()
 export class ProfileService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(createProfileDto: CreateProfileDto) {
     return this.prisma.userProfile.create({
