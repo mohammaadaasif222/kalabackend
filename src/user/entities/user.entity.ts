@@ -8,7 +8,6 @@ export class UserEntity {
   
   @Exclude()
   password_hash: string;
-  
   phone?: string;
   user_type: string;
   google_id?: string;

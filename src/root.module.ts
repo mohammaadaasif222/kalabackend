@@ -9,12 +9,19 @@ import { ReviewModule } from './review/review.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { ProfileModule } from './profile/profile.module';
 import { WorksModule } from './works/works.module';
+import { SmsModule } from './sms/sms.module';
+import { ConfigModule } from '@nestjs/config';
 
 
 
 @Module({
-  imports: [AuthModule, UserModule, PrismaModule, TalentModule, SocialsModule, CategoriesModule, ReviewModule, TransactionModule, ProfileModule, WorksModule],
+  imports: [ConfigModule.forRoot({
+    isGlobal: true,
+    envFilePath: '.env',
+    cache: true,
+    expandVariables: true,
+  }), AuthModule, UserModule, PrismaModule, TalentModule, SocialsModule, CategoriesModule, ReviewModule, TransactionModule, ProfileModule, WorksModule,  SmsModule],
   controllers: [],
   providers: [],
 })
-export class RootModule {}
+export class RootModule { }

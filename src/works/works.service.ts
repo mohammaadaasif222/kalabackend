@@ -3,11 +3,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import { WorkSampleType, WorkStatus } from '@prisma/client';
 import { CreateWorkSampleDto, QueryWorkSampleDto, UpdateWorkSampleDto } from './works.dto';
 
-9570000047 
+9570000047
 
 @Injectable()
 export class WorkService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(createWorkSampleDto: CreateWorkSampleDto) {
     try {
@@ -68,9 +68,15 @@ export class WorkService {
     return workSample;
   }
 
-  async findByTalentProfile(talentProfileId: string) {
+  async findByTalentProfile(talentProfileId: string, type?: string) {
+    // Build the where clause conditionally
+    const whereClause: any = { talentProfileId };
+    if (type && ['video', 'image', 'reel', 'other'].includes(type)) {
+      whereClause.type = type;
+    }
+
     return this.prisma.workSample.findMany({
-      where: { talentProfileId },
+      where: whereClause,
       orderBy: { createdAt: 'desc' },
     });
   }

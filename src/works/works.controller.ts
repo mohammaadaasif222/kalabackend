@@ -35,12 +35,13 @@ export class WorksController {
     return this.workSamplesService.count(queryDto);
   }
 
-  @Get('talent/:talentProfileId')
-  findByTalentProfile(
-    @Param('talentProfileId', ParseUUIDPipe) talentProfileId: string,
-  ) {
-    return this.workSamplesService.findByTalentProfile(talentProfileId);
-  }
+@Get('talent/:talentProfileId')
+findByTalentProfile(
+  @Param('talentProfileId', ParseUUIDPipe) talentProfileId: string,
+  @Query('type') type?: string, // Optional query parameter
+) {
+  return this.workSamplesService.findByTalentProfile(talentProfileId, type);
+}
 
   @Get('type/:type')
   findByType(@Param('type') type: WorkSampleType) {

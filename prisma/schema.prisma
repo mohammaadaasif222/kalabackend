@@ -34,8 +34,46 @@ model User {
   activityLogs         ActivityLog[]
   reviewsGiven         Review[]         @relation("Reviewer")
   reviewsReceived      Review[]         @relation("Reviewee")
-  
+  mobileOtps           MobileOtp[]
+  emailOtps            EmailOtp[]
+
   @@map("users")
+}
+
+
+
+model MobileOtp {
+  id            String    @id @default(uuid())
+  user_id       String
+  phone         String
+  otp           String
+  expires_at    DateTime
+  is_verified   Boolean   @default(false)
+  attempts      Int       @default(0)
+  created_at    DateTime  @default(now())
+  
+  user          User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@index([phone])
+  @@index([user_id])
+  @@map("mobile_otps")
+}
+
+model EmailOtp {
+  id            String    @id @default(uuid())
+  user_id       String
+  email         String
+  otp           String
+  expires_at    DateTime
+  is_verified   Boolean   @default(false)
+  attempts      Int       @default(0)
+  created_at    DateTime  @default(now())
+  
+  user          User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@index([email])
+  @@index([user_id])
+  @@map("email_otps")
 }
 
 model UserProfile {
