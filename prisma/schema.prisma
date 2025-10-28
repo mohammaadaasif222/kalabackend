@@ -75,7 +75,7 @@ model EmailOtp {
   @@index([user_id])
   @@map("email_otps")
 }
-
+ 
 model UserProfile {
   id                 String      @id @default(uuid())
   user_id            String      @unique
@@ -344,9 +344,6 @@ model ActivityLog {
   @@index([created_at])
   @@index([related_entity_type, related_entity_id])
 }
-
-
-
 
 enum ActivityType {
   profile_update
