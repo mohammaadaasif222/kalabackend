@@ -91,6 +91,7 @@ model UserProfile {
   banner_image_url   String?
   location_city      String?
   location_state     String?
+  pin_code           String?
   location_country   String?     @default("India")
   website_url        String?
   languages          Json?
@@ -455,4 +456,25 @@ model WorkSample {
   @@index([type])
   @@index([status])
   @@map("work_samples")
+}
+
+model Banner {
+  id          String       @id @default(cuid())
+  title       String
+  description String?      @db.Text
+  url         String
+  link        String
+  position    Int       @default(1)
+  type        BannerType
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([type])
+  @@index([createdAt])
+}
+
+enum BannerType {
+  TOP
+  BOTTOM
+  CARD
 }

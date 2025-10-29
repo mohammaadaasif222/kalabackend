@@ -11,6 +11,7 @@ import { ProfileModule } from './profile/profile.module';
 import { WorksModule } from './works/works.module';
 import { SmsModule } from './sms/sms.module';
 import { ConfigModule } from '@nestjs/config';
+import { BannerModule } from './banner/banner.module';
 
 
 
@@ -20,7 +21,7 @@ import { ConfigModule } from '@nestjs/config';
     envFilePath: '.env',
     cache: true,
     expandVariables: true,
-  }), AuthModule, UserModule, PrismaModule, TalentModule, SocialsModule, CategoriesModule, ReviewModule, TransactionModule, ProfileModule, WorksModule,  SmsModule],
+  }), AuthModule, UserModule, PrismaModule, TalentModule, SocialsModule, CategoriesModule, ReviewModule, TransactionModule, ProfileModule, WorksModule,  SmsModule, BannerModule],
   controllers: [],
   providers: [],
 })

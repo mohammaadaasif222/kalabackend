@@ -20,7 +20,7 @@ import type { CreateTalentDto, UpdateTalentDto } from './dto/talent.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 
 @Controller('talents')
-@UseGuards(JwtAuthGuard)
+
 export class TalentController {
   constructor(private readonly talentService: TalentService) { }
 
