@@ -55,6 +55,7 @@ export class SocialsController {
   @Delete(':accountId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('accountId') accountId: string) {
+    console.log("hello delete")
     await this.talentSocialService.remove(accountId);
   }
 }

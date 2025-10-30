@@ -52,7 +52,7 @@ export class AuthService {
     return { user, token };
   }
 
-  
+
   async googleLogin(token: string) {
     try {
       const ticket = await this.client.verifyIdToken({
@@ -140,14 +140,19 @@ export class AuthService {
   // Login user
   async login(email: string, password: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
-   
+
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const isValid = await bcrypt.compare(password, user.password_hash);
     if (!isValid) throw new UnauthorizedException('Invalid credentials');
 
     const token = this.jwtService.sign({ sub: user.id, email: user.email });
-    return { user, token };
+    if (user.user_type === 'admin') {
+      return { admin: user, adminToken: token };
+    } else {
+
+      return { user, token };
+    }
   }
 
   async updatePassword(id: string, password: string) {
@@ -160,7 +165,7 @@ export class AuthService {
       where: { id },
       data: { password_hash: hashedPassword },
     });
-    
+
     return {
       message: 'Password updated successfully',
     };

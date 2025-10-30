@@ -148,11 +148,7 @@ export class UserService {
     password_hash: false,
   };
 
-  // ==================== NEW ADMIN API METHODS ====================
 
-  /**
-   * Admin: Get all users with complete details
-   */
   async getAdminUserList(params: {
     page: number;
     limit: number;
@@ -182,14 +178,15 @@ export class UserService {
 
     // Build where clause with proper typing
     const talentProfileFilter: any = {};
-    
+
     if (talent_type) {
       talentProfileFilter.talent_type = talent_type;
     }
 
     const where: Prisma.UserWhereInput = {
       ...(is_active !== undefined && { is_active }),
-      ...(user_type && { user_type }),
+      user_type: { not: 'admin' },
+      ...(user_type && user_type !== 'admin' && { user_type }),
       ...(is_premium !== undefined && { is_premium }),
       ...(email_verified !== undefined && { email_verified }),
       ...(search && {
@@ -204,10 +201,10 @@ export class UserService {
     };
 
     // Build order by
-    const orderBy: Prisma.UserOrderByWithRelationInput = 
+    const orderBy: Prisma.UserOrderByWithRelationInput =
       sortBy === 'created_at' ? { created_at: sortOrder } :
-      sortBy === 'email' ? { email: sortOrder } :
-      { created_at: sortOrder };
+        sortBy === 'email' ? { email: sortOrder } :
+          { created_at: sortOrder };
 
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({
@@ -291,11 +288,176 @@ export class UserService {
     };
   }
 
-  // ==================== PUBLIC/WEBSITE API METHODS ====================
+  // async getPublicTalentList(params: {
+  //   page: number;
+  //   limit: number;
+  //   search?: string;
+  //   talent_type?: string;
+  //   categories?: string;
+  //   location_city?: string;
+  //   min_followers?: number;
+  //   verified_only?: boolean;
+  //   sortBy?: 'followers' | 'created_at' | 'rating';
+  //   sortOrder?: 'asc' | 'desc';
+  // }) {
+  //   const {
+  //     page = 1,
+  //     limit = 20,
+  //     search,
+  //     talent_type,
+  //     categories,
+  //     location_city,
+  //     min_followers,
+  //     verified_only = false,
+  //     sortBy = 'created_at',
+  //     sortOrder = 'desc',
+  //   } = params;
 
-  /**
-   * Public: Get talent listing for website
-   */
+  //   const skip = (page - 1) * limit;
+
+  //   // Build where clause
+  //   const talentProfileFilter: any = {
+  //     isNot: null,
+  //   };
+
+  //   if (talent_type) {
+  //     talentProfileFilter.talent_type = talent_type;
+  //   }
+
+  //   if (verified_only) {
+  //     talentProfileFilter.verify_badge = true;
+  //   }
+
+  //   if (categories) {
+  //     talentProfileFilter.categories = {
+  //       array_contains: categories,
+  //     };
+  //   }
+
+  //   const where: Prisma.UserWhereInput = {
+  //     is_active: true,
+  //     talentProfile: talentProfileFilter,
+  //     ...(search && {
+  //       OR: [
+  //         { profile: { display_name: { contains: search, mode: 'insensitive' } } },
+  //         { profile: { bio: { contains: search, mode: 'insensitive' } } },
+  //       ],
+  //     }),
+  //     ...(location_city && {
+  //       profile: { location_city: { equals: location_city, mode: 'insensitive' } },
+  //     }),
+  //   };
+
+  //   // Simplified ordering
+  //   const orderBy: Prisma.UserOrderByWithRelationInput = { created_at: sortOrder };
+
+  //   const [talents, total] = await Promise.all([
+  //     this.prisma.user.findMany({
+  //       skip,
+  //       take: limit,
+  //       where,
+  //       orderBy,
+  //       select: {
+  //         id: true,
+  //         profile: {
+  //           select: {
+  //             display_name: true,
+  //             profile_image_url: true,
+  //             bio: true,
+  //             location_city: true,
+  //             location_state: true,
+  //           },
+  //         },
+  //         talentProfile: {
+  //           select: {
+  //             talent_type: true,
+  //             categories: true,
+  //             specializations: true,
+  //             verify_badge: true,
+  //             experience_level: true,
+  //             rate_per_live: true,
+  //             rate_per_video: true,
+  //             rate_per_post: true,
+  //             currency: true,
+  //             socialAccounts: {
+  //               select: {
+  //                 platform: true,
+  //                 handle: true,
+  //                 profile_url: true,
+  //                 followers_count: true,
+  //                 is_verified: true,
+  //                 is_primary: true,
+  //               },
+  //               orderBy: [
+  //                 { is_primary: 'desc' },
+  //                 { followers_count: 'desc' },
+  //               ],
+  //             },
+  //           },
+  //         },
+  //       },
+  //     }) as Promise<PublicTalentResult[]>,
+  //     this.prisma.user.count({ where }),
+  //   ]);
+
+  //   // Format and filter by followers if needed
+  //   let formattedTalents = talents.map((talent) => {
+  //     const socialAccounts = talent.talentProfile?.socialAccounts || [];
+  //     const primarySocial = socialAccounts.find(s => s.is_primary);
+  //     const totalFollowers = socialAccounts.reduce(
+  //       (sum, acc) => sum + (acc.followers_count || 0),
+  //       0
+  //     );
+
+  //     return {
+  //       id: talent.id,
+  //       display_name: talent.profile?.display_name || 'Anonymous',
+  //       profile_image_url: talent.profile?.profile_image_url,
+  //       bio: talent.profile?.bio,
+  //       talent_type: talent.talentProfile?.talent_type,
+  //       categories: talent.talentProfile?.categories || [],
+  //       specializations: talent.talentProfile?.specializations || [],
+  //       verify_badge: talent.talentProfile?.verify_badge || false,
+  //       experience_level: talent.talentProfile?.experience_level,
+  //       location: talent.profile?.location_city && talent.profile?.location_state
+  //         ? `${talent.profile.location_city}, ${talent.profile.location_state}`
+  //         : null,
+  //       followers: totalFollowers,
+  //       primary_platform: primarySocial?.platform,
+  //       social_accounts: socialAccounts.map(acc => ({
+  //         platform: acc.platform,
+  //         handle: acc.handle,
+  //         followers: acc.followers_count,
+  //         is_verified: acc.is_verified,
+  //       })),
+  //       rates: {
+  //         per_live: talent.talentProfile?.rate_per_live,
+  //         per_video: talent.talentProfile?.rate_per_video,
+  //         per_post: talent.talentProfile?.rate_per_post,
+  //         currency: talent.talentProfile?.currency,
+  //       },
+  //     };
+  //   });
+
+  //   // Filter by minimum followers if specified
+  //   if (min_followers) {
+  //     formattedTalents = formattedTalents.filter(t => t.followers >= min_followers);
+  //   }
+
+  //   return {
+  //     success: true,
+  //     data: formattedTalents,
+  //     meta: {
+  //       total,
+  //       page,
+  //       limit,
+  //       totalPages: Math.ceil(total / limit),
+  //       hasMore: page * limit < total,
+  //     },
+  //   };
+  // }
+
+
   async getPublicTalentList(params: {
     page: number;
     limit: number;
@@ -344,6 +506,12 @@ export class UserService {
 
     const where: Prisma.UserWhereInput = {
       is_active: true,
+      user_type: {
+        not: 'admin', // Exclude admin users
+      },
+      createdBy: {
+        not: 'user', // Only get talents created by admin
+      },
       talentProfile: talentProfileFilter,
       ...(search && {
         OR: [
@@ -464,7 +632,6 @@ export class UserService {
       },
     };
   }
-
   /**
    * Public: Get complete talent profile for detail page
    */
@@ -592,7 +759,7 @@ export class UserService {
         whatsapp: user.profile?.whatsapp,
         is_premium: user.is_premium,
         member_since: user.created_at,
-        
+
         // Talent specific
         talent_type: user.talentProfile?.talent_type,
         categories: user.talentProfile?.categories || [],
@@ -601,7 +768,7 @@ export class UserService {
         years_of_experience: user.talentProfile?.years_of_experience,
         availability_status: user.talentProfile?.availability_status,
         verify_badge: user.talentProfile?.verify_badge || false,
-        
+
         // Rates
         rates: {
           per_live: user.talentProfile?.rate_per_live,
@@ -609,14 +776,14 @@ export class UserService {
           per_post: user.talentProfile?.rate_per_post,
           currency: user.talentProfile?.currency,
         },
-        
+
         // Portfolio
         portfolio_description: user.talentProfile?.portfolio_description,
         achievements: user.talentProfile?.achievements,
         awards: user.talentProfile?.awards || [],
         certifications: user.talentProfile?.certifications || [],
         collaboration_preferences: user.talentProfile?.collaboration_preferences || [],
-        
+
         // Social media
         total_followers: totalFollowers,
         social_accounts: socialAccounts.map(acc => ({
@@ -628,7 +795,7 @@ export class UserService {
           is_verified: acc.is_verified,
           is_primary: acc.is_primary,
         })),
-        
+
         // Reviews
         rating: {
           average: avgRating._avg.rating || 0,
