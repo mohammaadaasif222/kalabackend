@@ -17,7 +17,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 
 
 @Controller('profile')
-@UseGuards(JwtAuthGuard)
+
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) { }
 
@@ -42,6 +42,7 @@ export class ProfileController {
     });
   }
   @Get('me')
+  @UseGuards(JwtAuthGuard)
   async findMe(@Request() req) {
     const userId = req.user.sub;
     return this.profileService.findByUserId(userId);
